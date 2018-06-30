@@ -98,44 +98,30 @@ public class DetailFragment extends Fragment {
         textYear.setText(book[4]);
         textEditorial.setText(book[5]);
 
-        updateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mListener.onDetailUpdate(title, author, isbn, area, year, editorial, isUpdate);
-            }
-        });
+        updateButton.setOnClickListener(v -> mListener.onDetailUpdate(title, author, isbn, area, year, editorial, isUpdate));
 
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which){
-                            case DialogInterface.BUTTON_POSITIVE:
-                                new Thread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        final BookDatabase bookDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
-                                                BookDatabase.class, "book_db")
-                                                .build();
-                                        List<Books> book = bookDatabase.bookDao().getBook(isbn);
-                                        bookDatabase.bookDao().deleteBook(book.get(0));
-                                        bookDatabase.close();
-                                    }
-                                }).start();
-                                mListener.onDelete();
-                                break;
+        deleteButton.setOnClickListener(v -> {
+            DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        new Thread(() -> {
+                            final BookDatabase bookDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
+                                    BookDatabase.class, "book_db")
+                                    .build();
+                            List<Books> book = bookDatabase.bookDao().getBook(isbn);
+                            bookDatabase.bookDao().deleteBook(book.get(0));
+                            bookDatabase.close();
+                        }).start();
+                        mListener.onDelete();
+                        break;
 
-                            case DialogInterface.BUTTON_NEGATIVE:
-                                break;
-                        }
-                    }
-                };
-                AlertDialog.Builder builder = new AlertDialog.Builder(rootView.getContext());
-                builder.setMessage(R.string.deleteDialog).setPositiveButton(R.string.deleteYes, dialogClickListener)
-                        .setNegativeButton(R.string.deleteNo, dialogClickListener).show();
-            }
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        break;
+                }
+            };
+            AlertDialog.Builder builder = new AlertDialog.Builder(rootView.getContext());
+            builder.setMessage(R.string.deleteDialog).setPositiveButton(R.string.deleteYes, dialogClickListener)
+                    .setNegativeButton(R.string.deleteNo, dialogClickListener).show();
         });
 
         return rootView;

@@ -71,38 +71,35 @@ public class FragmentHostActivity extends AppCompatActivity implements
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        // close drawer when item is tapped
-                        drawerLayout.closeDrawers();
+                menuItem -> {
+                    // close drawer when item is tapped
+                    drawerLayout.closeDrawers();
 
-                        switch (menuItem.getItemId()) {
+                    switch (menuItem.getItemId()) {
 
-                            case R.id.seeAll:
-                                BookListFragment bookListFragment = BookListFragment.newInstance();
-                                replaceFragment(bookListFragment);
-                                getSupportActionBar().setTitle(R.string.listBooks);
-                                break;
-                            case R.id.add:
-                                AddFragment addFragment = AddFragment.newAddInstance();
-                                replaceFragment(addFragment);
-                                getSupportActionBar().setTitle(R.string.add);
-                                break;
-                            case R.id.search:
-                                SearchFragment searchFragment = SearchFragment.newInstance();
-                                replaceFragment(searchFragment);
-                                getSupportActionBar().setTitle(R.string.search);
-                                break;
-                            case R.id.export:
-                                DoBackUp();
-                                break;
-                            case R.id.seeExport:
-                                SeeBackUp();
-                                break;
-                        }
-                        return true;
+                        case R.id.seeAll:
+                            BookListFragment bookListFragment = BookListFragment.newInstance();
+                            replaceFragment(bookListFragment);
+                            getSupportActionBar().setTitle(R.string.listBooks);
+                            break;
+                        case R.id.add:
+                            AddFragment addFragment = AddFragment.newAddInstance();
+                            replaceFragment(addFragment);
+                            getSupportActionBar().setTitle(R.string.add);
+                            break;
+                        case R.id.search:
+                            SearchFragment searchFragment = SearchFragment.newInstance();
+                            replaceFragment(searchFragment);
+                            getSupportActionBar().setTitle(R.string.search);
+                            break;
+                        case R.id.export:
+                            DoBackUp();
+                            break;
+                        case R.id.seeExport:
+                            SeeBackUp();
+                            break;
                     }
+                    return true;
                 });
 
 
