@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">BookDB</string>
+    <string name="add">Insertar Libro</string>
+    <string name="update">Actualizar Libro</string>
+    <string name="delete">Eliminar Libro</string>
+    <string name="search">Buscar Libro</string>
+    <string name="export">Crear Backup</string>
+    <string name="seeExport">Ver Backup</string>
+    <string name="listBooks">Lista de libros</string>
+    <string name="detailedBook">Libro Detallado</string>
+    <string name="backupFile">Archivo Backup</string>
+    <string name="title">Título:</string>
+    <string name="author">Autor:</string>
+    <string name="isbn">ISBN:</string>
+    <string name="area">Area:</string>
+    <string name="year">Año:</string>
+    <string name="editorial">Editorial:</string>
+    <string-array name="area_array">
+        <item>Historia</item>
+        <item>Matematicas</item>
+        <item>Español</item>
+        <item>Ingles</item>
+    </string-array>
+    <string name="addButton">Insertar</string>
+    <string name="updateButton">Actualizar</string>
+    <string name="deleteButton">Eliminar</string>
+    <string name="saveChanges">Guardar Cambios</string>
+    <string name="deleteDialog">Esta seguro que desea eliminar este libro?</string>
+    <string name="deleteYes">Sí</string>
+    <string name="deleteNo">No</string>
+    <string name="isbnDialog">El formato del ISBN tiene que coincidir con el area. Para referencia:\n
+        ISBN: HS00X Area: Historia\n
+        ISBN: MT00X Area: Matematicas\n
+        ISBN: ES00X Area: Español\n
+        ISBN: IN00X Area: Ingles\n
+        La X representa un número secuencial\n\n
+        Intentelo denuevo.
+    </string>
+    <string name="isbnOK">OK</string>
+    <string name="isbnCancel">Cancelar</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
