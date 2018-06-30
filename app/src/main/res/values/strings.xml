@@ -33,7 +33,7 @@
         ISBN: MT00X Area: Matematicas\n
         ISBN: ES00X Area: Español\n
         ISBN: IN00X Area: Ingles\n
-        La X representa un número secuencial\n\n
+        La X representa un número secuencial.\n\n
         Intentelo denuevo.
     </string>
     <string name="isbnOK">OK</string>
