@@ -5,11 +5,13 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -69,35 +71,40 @@ public class SearchFragment extends Fragment {
 
         Button searchButton = rootView.findViewById(R.id.searchButton);
         final EditText isbnText = rootView.findViewById(R.id.searchISBN);
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final String isbn1 = isbnText.getText().toString();
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        final BookDatabase bookDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
-                                BookDatabase.class, "book_db")
-                                .build();
-                        List<Books> books = bookDatabase.bookDao().getBook(isbn1);
-                        title = books.get(0).getTitle();
-                        Log.d("Titulo", title);
-                        author = books.get(0).getAuthor();
-                        isbn = books.get(0).getIsbn();
-                        area = books.get(0).getArea();
-                        year = books.get(0).getYear();
-                        editorial = books.get(0).getEditorial();
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mListener.onSearch(title, author, isbn, area, year, editorial);
+        searchButton.setOnClickListener(v -> {
+            final String isbn1 = isbnText.getText().toString();
+            new Thread(() -> {
+                final BookDatabase bookDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
+                        BookDatabase.class, "book_db")
+                        .build();
+                List<Books> books = bookDatabase.bookDao().getBook(isbn1);
+                if (!books.isEmpty()) {
+                    title = books.get(0).getTitle();
+                    Log.d("Titulo", title);
+                    author = books.get(0).getAuthor();
+                    isbn = books.get(0).getIsbn();
+                    area = books.get(0).getArea();
+                    year = books.get(0).getYear();
+                    editorial = books.get(0).getEditorial();
+                    getActivity().runOnUiThread(
+                            () -> mListener.onSearch(title, author, isbn, area, year, editorial)
+                    );
+
+                }
+                else {
+                    getActivity().runOnUiThread(
+                            () -> {
+                                Toast toast =
+                                Toast.makeText(getContext(), "Book not Found!", Toast.LENGTH_SHORT);
+                                toast.setGravity(Gravity.TOP | Gravity.CENTER, 0,0);
+                                toast.show();
                             }
-                        });
-                        bookDatabase.close();
-                    }
+                    );
+                }
+
+                    bookDatabase.close();
                 }).start();
 
-            }
         });
         return rootView;
     }

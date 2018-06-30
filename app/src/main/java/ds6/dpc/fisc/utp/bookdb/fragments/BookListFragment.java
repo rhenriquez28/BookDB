@@ -36,6 +36,7 @@ public class BookListFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private ArrayList<String> booksIsbn;
 
     private OnFragmentInteractionListener mListener;
 
@@ -71,30 +72,28 @@ public class BookListFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_book_list, container, false);
 
         final ListView bookList = rootView.findViewById(R.id.booksList);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                final BookDatabase bookDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
-                        BookDatabase.class, "book_db")
-                        .build();
-                final List<Books> books = bookDatabase.bookDao().getAllBooks();
-                final ArrayList<String> booksTitle = new ArrayList<>();
-                //ArrayList<String> booksIsbn = new ArrayList<>();
-                for (int i=0; i<books.size(); i++){
-                    booksTitle.add(books.get(i).getTitle());
-                    //booksIsbn.add(books.get(i).getIsbn());
-                }
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                                android.R.layout.simple_list_item_1, booksTitle);
-                        adapter.notifyDataSetChanged();
-                        bookList.setAdapter(adapter);
-                    }
-                });
-                bookDatabase.close();
+        bookList.setOnItemClickListener((v,p,i,s) -> {
+            String isbn = booksIsbn.get(i);
+            //TODO ROY AQUI SI PUEDES PON QE CON EL ISBN LLAME AL FRAGMENTO DE DETALLE
+        } );
+        new Thread(() -> {
+            final BookDatabase bookDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
+                    BookDatabase.class, "book_db")
+                    .build();
+            final List<Books> books = bookDatabase.bookDao().getAllBooks();
+            final ArrayList<String> booksTitle = new ArrayList<>();
+            booksIsbn = new ArrayList<>();
+            for (int i=0; i<books.size(); i++){
+                booksTitle.add(books.get(i).getTitle());
+                booksIsbn.add(books.get(i).getIsbn());
             }
+            getActivity().runOnUiThread(() -> {
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
+                        android.R.layout.simple_list_item_1, booksTitle);
+                adapter.notifyDataSetChanged();
+                bookList.setAdapter(adapter);
+            });
+            bookDatabase.close();
         }).start();
 
         return rootView;

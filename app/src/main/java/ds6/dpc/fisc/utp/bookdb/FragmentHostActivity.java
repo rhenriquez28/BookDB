@@ -1,11 +1,16 @@
 package ds6.dpc.fisc.utp.bookdb;
 
+import android.Manifest;
 import android.arch.persistence.room.Room;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -20,12 +25,15 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 
 import ds6.dpc.fisc.utp.bookdb.database.BookDatabase;
 import ds6.dpc.fisc.utp.bookdb.fragments.AddFragment;
@@ -47,6 +55,7 @@ public class FragmentHostActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragmenthost);
         final Toolbar toolbar = findViewById(R.id.toolbar);
+        requestPremissions();
         setSupportActionBar(toolbar);
 
         ActionBar actionbar = getSupportActionBar();
@@ -99,93 +108,115 @@ public class FragmentHostActivity extends AppCompatActivity implements
 
     }
 
+    private void requestPremissions() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_CONTACTS)) {
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},2);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        }
+    }
+
     private void replaceFragment(android.support.v4.app.Fragment fragment) {
         android.support.v4.app.FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         fragmentTransaction.replace(R.id.fragmentContainer, fragment);
         fragmentTransaction.commit();
     }
 
+    private boolean writeToFile(String data) {
+        File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+        if(!dir.exists())
+            dir.mkdirs();
+        File file = new File(dir,"BDBackup.txt");
+        if(file.exists() && file.isFile()) {
+            file.delete();
+        }
+        try (FileWriter fileWriter = new FileWriter(file,true)) {
+            fileWriter.write(data);
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
     private void DoBackUp(){
-        final BookDatabase bookDatabase = Room.databaseBuilder(getApplicationContext(),
-                BookDatabase.class, DATABASE_NAME)
-                .build();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    File bdbackup = new File("BDBackup.txt");
-                    if (bdbackup.exists()){
-                        bdbackup.delete();
-                    }
-                    FileOutputStream fOut = null;
-                    try {
-                        fOut = openFileOutput(bdbackup.getPath(), Context.MODE_PRIVATE);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                Cursor cursor = bookDatabase.bookDao().getAllCursors();
-                String[] columnNames = cursor.getColumnNames();
-                Log.d("columna io?", columnNames[0]);
-                StringBuilder stringBuilder = new StringBuilder();
-                OutputStreamWriter osw = new OutputStreamWriter(fOut);
-                for (int i=0; i<columnNames.length; i++){
-                    if (i == columnNames.length-1){
-                        stringBuilder.append(columnNames[i] + "\n");
-                    }else {
-                        stringBuilder.append(columnNames[i] + " " + "|" + " ");
-                    }
-                }
-                Log.d("Columnas", stringBuilder.toString());
-                osw.write(stringBuilder.toString());
-                stringBuilder = new StringBuilder();
-                while (cursor.moveToNext()){
-                    for (int i=0; i<4; i++){
-                        stringBuilder.append(cursor.getString(i) + " " + "|" + " ");
-                    }
-                    stringBuilder.append(Integer.toString(cursor.getInt(4)) + " " + "|" + " ");
-                    stringBuilder.append(cursor.getString(5) + "\n");
-                    osw.write(stringBuilder.toString());
-                }
-                osw.flush();
-                osw.close();
-                cursor.close();
-                bookDatabase.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+        final Toast toast = Toast.makeText(getBaseContext(),"message",Toast.LENGTH_SHORT);
+        new Thread(() -> {
+            if(writeToFile(makeBackupString())) {
+                toast.setText("File saved successfully!");
+            } else {
+                toast.setText("File saving failed!");
             }
+            toast.show();
         }).start();
-        //---display file saved message---
-        Toast.makeText(getBaseContext(), "File saved successfully!", Toast.LENGTH_SHORT).show();
+    }
+
+    public String makeBackupString() {
+        final BookDatabase bookDatabase = Room.databaseBuilder(
+                getApplicationContext(),
+                BookDatabase.class, DATABASE_NAME
+        ).build();
+        Cursor cursor = bookDatabase.bookDao().getAllCursors();
+        String[] columnNames = cursor.getColumnNames();
+
+        String backupStr = "";
+        backupStr += Arrays.stream(columnNames)
+                .reduce((accum,str) -> accum + str + " | ")
+                .get() + "\n";
+        while (cursor.moveToNext()){
+            for (int i = 0; i < columnNames.length; i++) {
+                backupStr += cursor.getString(i) + " | ";
+            }
+            backupStr += "\n";
+        }
+        return backupStr;
     }
 
     public void SeeBackUp(){
-        InputStream is = null;
+        InputStream is;
         try {
-            is = openFileInput("BDBackup.txt");
-        }catch (FileNotFoundException e){
+            File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),"BDBackup.txt");
+            is = new FileInputStream(file);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            StringBuilder builder = new StringBuilder();
+            int c;
+            String backUpText;
+                while ((c = br.read()) > -1 ){
+                    builder.append((char)c);
+                }
+                is.close();
+                br.close();
+
+            backUpText = builder.toString();
+            Log.d("texto royal?", backUpText);
+            BackUpFragment backUpFragment = BackUpFragment.newInstance(backUpText);
+            replaceFragment(backUpFragment);
+            getSupportActionBar().setTitle(R.string.backupFile);
+        }catch (Exception e){
             e.printStackTrace();
+            Log.e("FILE","File not found");
         }
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        StringBuilder builder = new StringBuilder();
-        String str, backUpText;
-        try {
-            if (br.readLine() == null){
-                Log.d("br vacio io?", "yes");
-            }
-            while ((str = br.readLine()) != null){
-                builder.append(str + "\n");
-            }
-            is.close();
-            br.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        backUpText = builder.toString();
-        Log.d("texto royal?", backUpText);
-        BackUpFragment backUpFragment = BackUpFragment.newInstance(backUpText);
-        replaceFragment(backUpFragment);
-        getSupportActionBar().setTitle(R.string.backupFile);
+
+
     }
 
     @Override
@@ -197,10 +228,7 @@ public class FragmentHostActivity extends AppCompatActivity implements
         }
         return super.onOptionsItemSelected(item);
     }
-        /*char[] CheckIsbn = fIsbn.toCharArray();
-        if (CheckIsbn[0] != 'H' || CheckIsbn[1] != 'S' && fArea == "Historia"){
 
-        }*/
 
     @Override
     public void onAdd() {
