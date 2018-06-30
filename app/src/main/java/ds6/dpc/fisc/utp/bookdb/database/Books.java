@@ -8,7 +8,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
 @Entity(tableName = "Books")
-public class Books implements Parcelable{
+public class Books{
 
     @NonNull
     @PrimaryKey
@@ -33,43 +33,6 @@ public class Books implements Parcelable{
     public Books(){
 
     }
-
-
-    protected Books(Parcel in) {
-        isbn = in.readString();
-        author = in.readString();
-        title = in.readString();
-        area = in.readString();
-        year = in.readInt();
-        editorial = in.readString();
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(isbn);
-        dest.writeString(author);
-        dest.writeString(title);
-        dest.writeString(area);
-        dest.writeInt(year);
-        dest.writeString(editorial);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    public static final Creator<Books> CREATOR = new Creator<Books>() {
-        @Override
-        public Books createFromParcel(Parcel in) {
-            return new Books(in);
-        }
-
-        @Override
-        public Books[] newArray(int size) {
-            return new Books[size];
-        }
-    };
 
     public String getIsbn() {
         return isbn;
