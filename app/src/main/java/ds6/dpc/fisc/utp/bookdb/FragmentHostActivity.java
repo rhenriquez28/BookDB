@@ -288,7 +288,22 @@ public class FragmentHostActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onBookSelection(String title, String author, String isbn, String area, int year, String editorial) {
+        String[] book = new String[6];
+        book[0] = title;
+        book[1] = author;
+        book[2] = isbn;
+        book[3] = area;
+        book[4] = Integer.toString(year);
+        book[5] = editorial;
+        DetailFragment detailFragment = DetailFragment.newInstance(book);
+        replaceFragment(detailFragment);
+        getSupportActionBar().setTitle(R.string.detailedBook);
+    }
+
+    @Override
     public void onFragmentInteraction(Uri uri) {
 
     }
+
 }

@@ -74,7 +74,17 @@ public class BookListFragment extends Fragment {
         final ListView bookList = rootView.findViewById(R.id.booksList);
         bookList.setOnItemClickListener((v,p,i,s) -> {
             String isbn = booksIsbn.get(i);
-            //TODO ROY AQUI SI PUEDES PON QE CON EL ISBN LLAME AL FRAGMENTO DE DETALLE
+            new Thread(() ->{
+                final BookDatabase bookDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
+                        BookDatabase.class, "book_db")
+                        .build();
+                final List<Books> books = bookDatabase.bookDao().getBook(isbn);
+                getActivity().runOnUiThread(() ->{
+                    mListener.onBookSelection(books.get(0).getTitle(), books.get(0).getAuthor(),
+                            isbn, books.get(0).getArea(), books.get(0).getYear(),
+                            books.get(0).getEditorial());
+                });
+            }).start();
         } );
         new Thread(() -> {
             final BookDatabase bookDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
@@ -128,6 +138,6 @@ public class BookListFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onBookSelection(String title, String author, String isbn, String area, int year, String editorial);
     }
 }
