@@ -177,8 +177,8 @@ public class FragmentHostActivity extends AppCompatActivity implements
 
         String backupStr = "";
         backupStr += Arrays.stream(columnNames)
-                .reduce((accum,str) -> accum + str + " | ")
-                .get() + "\n";
+                .reduce((accum,str) -> accum + " | " + str)
+                .get() + " | \n";
         while (cursor.moveToNext()){
             for (int i = 0; i < columnNames.length; i++) {
                 backupStr += cursor.getString(i) + " | ";
