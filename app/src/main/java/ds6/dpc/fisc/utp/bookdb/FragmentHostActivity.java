@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Environment;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -26,13 +25,10 @@ import android.widget.Toast;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.Arrays;
 
 import ds6.dpc.fisc.utp.bookdb.database.BookDatabase;
@@ -44,8 +40,7 @@ import ds6.dpc.fisc.utp.bookdb.fragments.SearchFragment;
 
 public class FragmentHostActivity extends AppCompatActivity implements
         BookListFragment.OnFragmentInteractionListener, AddFragment.OnFragmentInteractionListener,
-        SearchFragment.OnFragmentInteractionListener, DetailFragment.OnFragmentInteractionListener,
-        BackUpFragment.OnFragmentInteractionListener{
+        SearchFragment.OnFragmentInteractionListener, DetailFragment.OnFragmentInteractionListener{
 
     private static final String DATABASE_NAME = "book_db";
     DrawerLayout drawerLayout;
@@ -75,6 +70,11 @@ public class FragmentHostActivity extends AppCompatActivity implements
                     // close drawer when item is tapped
                     drawerLayout.closeDrawers();
 
+                    View view = this.getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
                     switch (menuItem.getItemId()) {
 
                         case R.id.seeAll:
@@ -167,7 +167,7 @@ public class FragmentHostActivity extends AppCompatActivity implements
         }).start();
     }
 
-    public String makeBackupString() {
+    private String makeBackupString() {
         final BookDatabase bookDatabase = Room.databaseBuilder(
                 getApplicationContext(),
                 BookDatabase.class, DATABASE_NAME
@@ -188,7 +188,7 @@ public class FragmentHostActivity extends AppCompatActivity implements
         return backupStr;
     }
 
-    public void SeeBackUp(){
+    private void SeeBackUp(){
         InputStream is;
         try {
             File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS),"BDBackup.txt");
@@ -204,7 +204,6 @@ public class FragmentHostActivity extends AppCompatActivity implements
                 br.close();
 
             backUpText = builder.toString();
-            Log.d("texto royal?", backUpText);
             BackUpFragment backUpFragment = BackUpFragment.newInstance(backUpText);
             replaceFragment(backUpFragment);
             getSupportActionBar().setTitle(R.string.backupFile);
@@ -299,11 +298,6 @@ public class FragmentHostActivity extends AppCompatActivity implements
         DetailFragment detailFragment = DetailFragment.newInstance(book);
         replaceFragment(detailFragment);
         getSupportActionBar().setTitle(R.string.detailedBook);
-    }
-
-    @Override
-    public void onFragmentInteraction(Uri uri) {
-
     }
 
 }

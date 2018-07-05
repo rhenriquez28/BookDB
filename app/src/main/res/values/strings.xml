@@ -36,6 +36,8 @@
         La X representa un número secuencial.\n\n
         Intentelo denuevo.
     </string>
+    <string name="isbnExists">El ISBN que usted desea insertar ya esta en la base de datos.
+        Por favor introduzca otro ISBN.</string>
     <string name="isbnOK">OK</string>
     <string name="isbnCancel">Cancelar</string>
 

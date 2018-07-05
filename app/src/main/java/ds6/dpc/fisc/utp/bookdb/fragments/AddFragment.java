@@ -145,28 +145,8 @@ public class AddFragment extends Fragment {
                 title = titleText.getText().toString();
                 author = authorText.getText().toString();
                 isbn = isbnText.getText().toString();
-                if (yearText.getText().toString().equals("")){
-                }else {
-                    year = Integer.parseInt(yearText.getText().toString());
-                }
-                editorial = editorialText.getText().toString();
-                if (
-                        (isbn.charAt(0) == 'H' && isbn.charAt(1) == 'S' && area.equals("Historia")) ||
-                        (isbn.charAt(0) == 'M' && isbn.charAt(1) == 'T' && area.equals("Matematicas")) ||
-                        (isbn.charAt(0) == 'E' && isbn.charAt(1) == 'S' && area.equals("Español")) ||
-                        (isbn.charAt(0) == 'I' && isbn.charAt(1) == 'N' && area.equals("Ingles"))
-                    ){
-                    Books book = new Books();
-                    book.setTitle(title);
-                    book.setAuthor(author);
-                    book.setIsbn(isbn);
-                    book.setArea(area);
-                    book.setYear(year);
-                    book.setEditorial(editorial);
-                    bookDatabase.bookDao().updateBook(book);
-                    bookDatabase.close();
-                    getActivity().runOnUiThread(mListener::onUpdate);
-                }else {
+                if (bookDatabase.bookDao().getBook(isbn).size() > 0
+                        && !title.equals(bookDatabase.bookDao().getBook(isbn).get(0).getTitle())){
                     final DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                         switch (which){
                             case DialogInterface.BUTTON_POSITIVE:
@@ -178,11 +158,48 @@ public class AddFragment extends Fragment {
                     };
                     getActivity().runOnUiThread(() -> {
                         AlertDialog.Builder builder = new AlertDialog.Builder(rootView.getContext());
-                        builder.setMessage(R.string.isbnDialog).setPositiveButton(R.string.isbnOK, dialogClickListener)
+                        builder.setMessage(R.string.isbnExists).setPositiveButton(R.string.isbnOK, dialogClickListener)
                                 .setNegativeButton(R.string.isbnCancel, dialogClickListener).show();
                     });
-                }
+                }else {
+                    if (yearText.getText().toString().equals("")){
+                    }else {
+                        year = Integer.parseInt(yearText.getText().toString());
+                    }
+                    editorial = editorialText.getText().toString();
+                    if (
+                            (isbn.charAt(0) == 'H' && isbn.charAt(1) == 'S' && area.equals("Historia")) ||
+                                    (isbn.charAt(0) == 'M' && isbn.charAt(1) == 'T' && area.equals("Matematicas")) ||
+                                    (isbn.charAt(0) == 'E' && isbn.charAt(1) == 'S' && area.equals("Español")) ||
+                                    (isbn.charAt(0) == 'I' && isbn.charAt(1) == 'N' && area.equals("Ingles"))
+                            ){
+                        Books book = new Books();
+                        book.setTitle(title);
+                        book.setAuthor(author);
+                        book.setIsbn(isbn);
+                        book.setArea(area);
+                        book.setYear(year);
+                        book.setEditorial(editorial);
+                        bookDatabase.bookDao().updateBook(book);
+                        bookDatabase.close();
+                        getActivity().runOnUiThread(mListener::onUpdate);
+                    }else {
+                        final DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                            switch (which){
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    break;
 
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    break;
+                            }
+                        };
+                        getActivity().runOnUiThread(() -> {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(rootView.getContext());
+                            builder.setMessage(R.string.isbnDialog).setPositiveButton(R.string.isbnOK, dialogClickListener)
+                                    .setNegativeButton(R.string.isbnCancel, dialogClickListener).show();
+                        });
+                    }
+                }
             }).start());
         }else {
             addButton.setOnClickListener(v -> new Thread(() -> {
@@ -192,30 +209,7 @@ public class AddFragment extends Fragment {
                 title = titleText.getText().toString();
                 author = authorText.getText().toString();
                 isbn = isbnText.getText().toString();
-                if (yearText.getText().toString().equals("")){
-                }else {
-                    year = Integer.parseInt(yearText.getText().toString());
-                }
-                editorial = editorialText.getText().toString();
-                if (
-                        !isbn.isEmpty()
-                        && (
-                                (isbn.charAt(0) == 'H' && isbn.charAt(1) == 'S' && area.equals("Historia")) ||
-                                (isbn.charAt(0) == 'M' && isbn.charAt(1) == 'T' && area.equals("Matematicas")) ||
-                                (isbn.charAt(0) == 'E' && isbn.charAt(1) == 'S' && area.equals("Español")) ||
-                                (isbn.charAt(0) == 'I' && isbn.charAt(1) == 'N' && area.equals("Ingles")))
-                        ){
-                    Books book = new Books();
-                    book.setTitle(title);
-                    book.setAuthor(author);
-                    book.setIsbn(isbn);
-                    book.setArea(area);
-                    book.setYear(year);
-                    book.setEditorial(editorial);
-                    bookDatabase.bookDao().insertBook(book);
-                    bookDatabase.close();
-                    getActivity().runOnUiThread(mListener::onAdd);
-                }else {
+                if (bookDatabase.bookDao().getBook(isbn).size() > 0){
                     final DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
                         switch (which){
                             case DialogInterface.BUTTON_POSITIVE:
@@ -227,10 +221,50 @@ public class AddFragment extends Fragment {
                     };
                     getActivity().runOnUiThread(() -> {
                         AlertDialog.Builder builder = new AlertDialog.Builder(rootView.getContext());
-                        builder.setMessage(R.string.isbnDialog).setPositiveButton(R.string.isbnOK, dialogClickListener)
+                        builder.setMessage(R.string.isbnExists).setPositiveButton(R.string.isbnOK, dialogClickListener)
                                 .setNegativeButton(R.string.isbnCancel, dialogClickListener).show();
                     });
+                }else {
+                    if (yearText.getText().toString().equals("")){
+                    }else {
+                        year = Integer.parseInt(yearText.getText().toString());
                     }
+                    editorial = editorialText.getText().toString();
+                    if (
+                            !isbn.isEmpty()
+                                    && (
+                                    (isbn.charAt(0) == 'H' && isbn.charAt(1) == 'S' && area.equals("Historia")) ||
+                                            (isbn.charAt(0) == 'M' && isbn.charAt(1) == 'T' && area.equals("Matematicas")) ||
+                                            (isbn.charAt(0) == 'E' && isbn.charAt(1) == 'S' && area.equals("Español")) ||
+                                            (isbn.charAt(0) == 'I' && isbn.charAt(1) == 'N' && area.equals("Ingles")))
+                            ){
+                        Books book = new Books();
+                        book.setTitle(title);
+                        book.setAuthor(author);
+                        book.setIsbn(isbn);
+                        book.setArea(area);
+                        book.setYear(year);
+                        book.setEditorial(editorial);
+                        bookDatabase.bookDao().insertBook(book);
+                        bookDatabase.close();
+                        getActivity().runOnUiThread(mListener::onAdd);
+                    }else {
+                        final DialogInterface.OnClickListener dialogClickListener = (dialog, which) -> {
+                            switch (which){
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    break;
+
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    break;
+                            }
+                        };
+                        getActivity().runOnUiThread(() -> {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(rootView.getContext());
+                            builder.setMessage(R.string.isbnDialog).setPositiveButton(R.string.isbnOK, dialogClickListener)
+                                    .setNegativeButton(R.string.isbnCancel, dialogClickListener).show();
+                        });
+                    }
+                }
             }).start());
         }
 
